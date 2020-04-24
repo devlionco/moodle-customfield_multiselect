@@ -17,63 +17,28 @@
 /**
  * Class field
  *
- * @package customfield_file
+ * @package customfield_multiselect
  * @author Evgeniy Voevodin
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright 2020 Devlion.co
  */
 
-namespace customfield_file;
+namespace customfield_multiselect;
 
 defined('MOODLE_INTERNAL') || die;
 
 /**
  * Class field
  *
- * @package customfield_file
+ * @package customfield_multiselect
  * @author Evgeniy Voevodin
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright 2020 Devlion.co
  */
-class field_controller extends \core_customfield\field_controller {
+class field_controller extends \customfield_select\field_controller {
     /**
      * Customfield type
      */
-    const TYPE = 'file';
+    const TYPE = 'multiselect';
 
-    /**
-     * Add fields for editing a file field.
-     *
-     * @param \MoodleQuickForm $mform
-     */
-    public function config_form_definition(\MoodleQuickForm $mform) {
-        global $CFG;
-
-        $mform->addElement('header', 'header_specificsettings', get_string('specificsettings', 'customfield_file'));
-        $mform->setExpanded('header_specificsettings', true);
-
-        $mform->addElement('filetypes', 'configdata[allowedtypes]', get_string('allowedtypes', 'customfield_file'));
-
-        $maxbytesoptions = get_max_upload_sizes($CFG->maxbytes);
-
-        $mform->addElement('select', 'configdata[maxbytes]', get_string('maxbytes', 'customfield_file'), $maxbytesoptions);
-        $mform->setType('configdata[maxbytes]', PARAM_INT);
-
-        $options[0] = get_string('unlimited');
-        for ($i = 1; $i <= 10; $i++) {
-            $options[$i] = $i;
-        }
-
-        $mform->addElement('select', 'configdata[maxfiles]', get_string('maxfiles', 'customfield_file'), $options);
-        $mform->setDefault('configdata[maxfiles]', 1);
-    }
-
-    /**
-     * Does this custom field type support being used as part of the block_myoverview
-     * custom field grouping?
-     * @return bool
-     */
-    public function supports_course_grouping(): bool {
-        return false;
-    }
 }

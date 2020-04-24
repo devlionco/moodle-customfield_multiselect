@@ -15,39 +15,15 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * @package customfield_file
+ * Customfield multiselect field plugin strings
+ *
+ * @package customfield_multiselect
  * @author Evgeniy Voevodin
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright 2020 Devlion.co
  */
 
-defined('MOODLE_INTERNAL') || die;
+defined('MOODLE_INTERNAL') || die();
 
-function customfield_file_pluginfile($course, $cm, $context, $filearea, $args, $forcedownload) {
-
-    global $DB, $CFG;
-
-    $fs = get_file_storage();
-
-    if (!has_capability('moodle/course:view', $context)) {
-        send_file_not_found();
-    }
-
-    list($itemid, $filename) = $args;
-
-    $params = array(
-        'component' => 'customfield_file',
-        'filearea' => $filearea,
-        'itemid' => $itemid,
-        'filename' => $filename
-    );
-
-    $instanceid = $DB->get_field('files', 'id', $params);
-
-    if (empty($instanceid)) {
-        send_file_not_found();
-    } else {
-        $file = $fs->get_file_by_id($instanceid);
-        send_stored_file($file);
-    }
-}
+$string['pluginname'] = 'Multidropdown menu';
+$string['privacy:metadata'] = 'The Multidropdown menu field type plugin doesn\'t store any personal data; it uses tables defined in core.';

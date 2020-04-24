@@ -15,110 +15,86 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * File plugin data controller
+ * Multielect plugin data controller
  *
- * @package customfield_file
+ * @package customfield_multiselect
  * @author Evgeniy Voevodin
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright 2020 Devlion.co
  */
 
-namespace customfield_file;
+namespace customfield_multiselect;
+
+use core_customfield\api;
 
 defined('MOODLE_INTERNAL') || die;
 
-use core_customfield\field_controller;
 /**
  * Class data
  *
- * @package customfield_file
+ * @package customfield_multiselect
  * @author Evgeniy Voevodin
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright 2020 Devlion.co
  */
-class data_controller extends \core_customfield\data_controller {
+class data_controller extends \customfield_select\data_controller {
 
-    var $options = [];
-
-
-    public function __construct(int $id, \stdClass $record) {
-        parent::__construct($id, $record);
-        $field = field_controller::create($record->fieldid);
-        $config = $field->get('configdata');
-
-        $this->options = [
-            'maxbytes' => $config['maxbytes'],
-            'accepted_types' => $config['allowedtypes'],
-            'subdirs' => 0,
-            'maxfiles' => $config['maxfiles'],
-            'context' => $this->get_context()
-        ];
-    }
-
-    /**
-     * Return the name of the field where the information is stored
-     * @return string
-     */
     public function datafield() : string {
         return 'charvalue';
     }
-
     /**
-     * Returns the default value as it would be stored in the database (not in human-readable format).
-     *
-     * @return mixed
-     */
-    public function get_default_value() {
-        return '';
-    }
-
-    /**
-     * Add fields for editing a textarea field.
+     * Add fields for editing a multiselect field.
      *
      * @param \MoodleQuickForm $mform
      */
     public function instance_form_definition(\MoodleQuickForm $mform) {
+        $field = $this->get_field();
+        $config = $field->get('configdata');
+        $options = field_controller::get_options_array($field);
+        $formattedoptions = array();
+        $context = $this->get_field()->get_handler()->get_configuration_context();
+        foreach ($options as $key => $option) {
+            // Multilang formatting with filters.
+            $formattedoptions[$key] = format_string($option, true, ['context' => $context]);
+        }
 
         $elementname = $this->get_form_element_name();
-        $elementnameprepare = $this->get_form_element_name_prepare();
+        $options = array(
+            'multiple' => true
+        );
+        $mform->addElement('autocomplete', $elementname, $this->get_field()->get_formatted_name(), $formattedoptions, $options);
 
-        $contextid = $this->get_context()->id;
-
-        $data = new \stdClass();
-
-        file_prepare_standard_filemanager($data, $elementnameprepare, $this->options, $this->get_context(), 'customfield_file', $elementnameprepare, $contextid);
-
-        $mform->addElement('filemanager', $elementnameprepare, $this->get_field()->get_formatted_name(), null, $this->options);
-
-        $mform->setDefault($elementnameprepare, $data->$elementname);
+        if (($defaultkey = array_search($config['defaultvalue'], $options)) !== false) {
+            $mform->setDefault($elementname, $defaultkey);
+        }
+        if ($field->get_configdata_property('required')) {
+            $mform->addRule($elementname, null, 'required', null, 'client');
+        }
     }
 
+    /**
+     * Saves the data coming from form
+     *
+     * @param \stdClass $datanew data coming from the form
+     */
     public function instance_form_save(\stdClass $datanew) {
-
-        $elementname = $this->get_form_element_name_prepare();
+        $elementname = $this->get_form_element_name();
         if (!property_exists($datanew, $elementname)) {
             return;
         }
-
         $value = $datanew->$elementname;
 
-        $fs = get_file_storage();
-        $contextid = $this->get_context()->id;
-
-        $draftlinks = file_save_draft_area_files($value, $contextid, 'customfield_file', $elementname, $contextid, $this->options);
-
-        $files = $fs->get_area_files($contextid, 'customfield_file', $elementname, $contextid, 'itemid, filepath, filename', false);
-        $data = [];
-        foreach ($files as $pathnamehash => $file) {
-            $data[] = $file->get_id();
-        }
-
-        $data = serialize($data);
-        $this->data->set($this->datafield(), $data);
-        $this->data->set('value', $data);
+        $value = serialize($value);
+        $this->data->set($this->datafield(), $value);
+        $this->data->set('value', $value);
         $this->save();
     }
 
+    /**
+     * Returns the unserialized value from the database or default value if data record is not present
+     *
+     * @return mixed
+     */
     public function get_value() {
         if (!$this->get('id')) {
             return [$this->get_default_value()];
@@ -127,7 +103,7 @@ class data_controller extends \core_customfield\data_controller {
     }
 
     /**
-     * Returns value in a human-readable format
+     * Returns value in a human-readable format or default value if data record is not present
      *
      * @return mixed|null value or null if empty
      */
@@ -138,34 +114,6 @@ class data_controller extends \core_customfield\data_controller {
             return null;
         }
 
-        $fs = get_file_storage();
-        $links = [];
-
-        foreach ($value as $fileid) {
-            $file = $fs->get_file_by_id($fileid);
-            $links[] = (\moodle_url::make_pluginfile_url(
-                $file->get_contextid(),
-                $file->get_component(),
-                $file->get_filearea(),
-                $file->get_itemid(),
-                '/',
-                $file->get_filename())->out()
-            );
-        }
-
-        return $links;
-    }
-
-    /**
-     * Returns the name of the field to be used on HTML forms.
-     *
-     * @return string
-     */
-    protected function get_form_element_name() : string {
-        return $this->get_form_element_name_prepare(). '_filemanager';
-    }
-
-    protected function get_form_element_name_prepare() : string {
-        return 'customfield_' . $this->get_field()->get('shortname');
+        return format_string(implode(', ', $value), true, ['context' => $this->get_context()]);
     }
 }

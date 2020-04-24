@@ -14,14 +14,14 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 /**
- * Privacy Subsystem implementation for customfield_file.
+ * Privacy Subsystem implementation for customfield_multiselect.
  *
- * @package customfield_file
+ * @package customfield_multiselect
  * @author Evgeniy Voevodin
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright 2020 Devlion.co
  */
-namespace customfield_file\privacy;
+namespace customfield_multiselect\privacy;
 
 use core_customfield\data_controller;
 use core_customfield\privacy\customfield_provider;
@@ -30,7 +30,7 @@ use core_privacy\local\request\writer;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Privacy Subsystem for customfield_file implementing null_provider.
+ * Privacy Subsystem for customfield_multiselect implementing null_provider.
  *
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright 2020 Devlion.co

@@ -15,9 +15,9 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Customfield File Type
+ * Customfield Multiselect Type
  *
- * @package customfield_file
+ * @package customfield_multiselect
  * @author Evgeniy Voevodin
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  * @copyright 2020 Devlion.co
@@ -25,6 +25,9 @@
 
 defined('MOODLE_INTERNAL') || die();
 
-$plugin->component = 'customfield_file';
-$plugin->version   = 2020042200;
+$plugin->component = 'customfield_multiselect';
+$plugin->version   = 2020040700;
 $plugin->requires  = 2019111200;
+$plugin->dependencies = array(
+    'customfield_multiselect' => 2019111800
+);
