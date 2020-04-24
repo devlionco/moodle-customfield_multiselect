@@ -29,5 +29,5 @@ $plugin->component = 'customfield_multiselect';
 $plugin->version   = 2020040700;
 $plugin->requires  = 2019111200;
 $plugin->dependencies = array(
-    'customfield_multiselect' => 2019111800
+    'customfield_select' => 2019111800
 );
