@@ -17,7 +17,7 @@ The multi selector is implemented using autocomplete selector.
 
 Installations
 -------
-1. Copy contents of this archive to /customfield/field/file path of your moodle installation
+1. Copy contents of this archive to /customfield/field/multiselect path of your moodle installation
 2. Visit http://YOURMOODLEURL/admin/index.php for plugin check initiation
 
 ## License ##
