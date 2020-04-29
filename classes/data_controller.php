@@ -116,4 +116,14 @@ class data_controller extends \customfield_select\data_controller {
 
         return format_string(implode(', ', $value), true, ['context' => $this->get_context()]);
     }
+
+    /**
+     * Checks if the value is empty
+     *
+     * @param mixed $value
+     * @return bool
+     */
+    protected function is_empty($value) : bool {
+        return empty($value);
+    }
 }
