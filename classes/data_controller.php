@@ -25,8 +25,6 @@
 
 namespace customfield_multiselect;
 
-use core_customfield\api;
-
 defined('MOODLE_INTERNAL') || die;
 
 /**
@@ -39,9 +37,23 @@ defined('MOODLE_INTERNAL') || die;
  */
 class data_controller extends \customfield_select\data_controller {
 
+    /**
+     * Return the name of the field where the information is stored
+     * @return string
+     */
     public function datafield() : string {
         return 'charvalue';
     }
+
+    /**
+     * Returns the default value as it would be stored in the database (not in human-readable format).
+     *
+     * @return mixed
+     */
+    public function get_default_value() {
+        return '';
+    }
+
     /**
      * Add fields for editing a multiselect field.
      *
@@ -97,9 +109,18 @@ class data_controller extends \customfield_select\data_controller {
      */
     public function get_value() {
         if (!$this->get('id')) {
-            return [$this->get_default_value()];
+            return $this->get_default_value();
         }
-        return unserialize($this->get($this->datafield()));
+
+        $value = unserialize($this->get($this->datafield()));
+
+        foreach ($value as $key => $val) {
+            if (empty($val)) {
+                unset($value[$key]);
+            }
+        }
+
+        return serialize($value);
     }
 
     /**
@@ -110,11 +131,23 @@ class data_controller extends \customfield_select\data_controller {
     public function export_value() {
         $value = $this->get_value();
 
+        $value = unserialize($value);
+
         if ($this->is_empty($value)) {
-            return null;
+            return '';
         }
 
-        return format_string(implode(', ', $value), true, ['context' => $this->get_context()]);
+        $fieldcontroller = $this->get_field();
+        $options = $fieldcontroller::get_options_array($fieldcontroller);
+        $return = [];
+
+        foreach ($value as $optionid) {
+            if (array_key_exists($optionid, $options) && !empty($options[$optionid])) {
+                $return[] = format_string($options[$optionid], true, ['context' => $this->get_context()]);
+            }
+        }
+
+        return implode(', ', $return);
     }
 
     /**
@@ -125,5 +158,17 @@ class data_controller extends \customfield_select\data_controller {
      */
     protected function is_empty($value) : bool {
         return empty($value);
+    }
+
+    /**
+     * Prepares the custom field data related to the object to pass to mform->set_data() and adds them to it
+     *
+     * This function must be called before calling $form->set_data($object);
+     *
+     * @param \stdClass $instance the instance that has custom fields, if 'id' attribute is present the custom
+     *    fields for this instance will be added, otherwise the default values will be added.
+     */
+    public function instance_form_before_set_data(\stdClass $instance) {
+        $instance->{$this->get_form_element_name()} = unserialize($this->get_value());
     }
 }
